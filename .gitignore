@@ -42,3 +42,4 @@ backup/
 # inventory
 *.DS_Store
 save_*
+*.pyc
