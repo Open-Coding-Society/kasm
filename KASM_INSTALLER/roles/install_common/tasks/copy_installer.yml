@@ -19,10 +19,26 @@
       - "Kasm installer not found"
       - "Ensure that kasm_workspaces installer tarfile is in {{role_path}}/files/"
 
+- name: Read .envservers file
+  slurp:
+    src: "{{ playbook_dir }}/.envservers"
+  register: env_file
+
+- name: Parse .envservers into vars
+  set_fact:
+    env_vars: "{{ env_file.content | b64decode | regex_findall('^([^#][^=]+)=(.+)$', multiline=True) | items2dict }}"
+
 - name: unarchive kasm installer
   unarchive:
     src: "{{ installer_file }}"
     dest: "{{ tempdir.path }}"
+
+- name: Replace default_properties.yml from env var path
+  copy:
+    src: "{{ env_vars.slip_stream_properties_file }}"
+    dest: "{{ tempdir.path }}/kasm_release/conf/database/seed_data/default_properties.yml"
+    mode: '0644'
+  when: env_vars.slip_stream_install | default('false') | bool
 
 - name: Copy service images
   copy:

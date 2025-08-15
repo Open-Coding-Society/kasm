@@ -28,6 +28,27 @@ manager_token=${manager_token:-123Qwerty!}
 read -p "Enter registration token [default: 123Qwerty!]: " registration_token
 registration_token=${registration_token:-123Qwerty!}
 
+# Prompt user to use slip stream install
+
+# < check to see if .envslip exists and clear it >
+: > .envslip || { echo "Error: cannot write .envslip"; exit 1; }
+
+read -r -p "Do you want to use slip stream install [default: false] (true/false) " slip_stream_install
+slip_stream_install=${slip_stream_install:-false}
+
+# < if the slip stream install is false, add "slip_stream_properties_file=/slip/my_custom_default_properties.yml" into the slip_stream_properties_file. If true, ask for the name of the file. It will be in /slip so just the name. Put it in the env >
+if [ "$slip_stream_install" = "true" ]; then
+  read -r -p "Enter the properties filename in /slip (e.g., default_properties.yml): " prop_name
+  # normalize any accidental prefixes
+  prop_name=${prop_name#/}
+  prop_name=${prop_name##slip/}
+  echo "slip_stream_install=true" >> .envslip
+  echo "slip_stream_properties_file=/slip/${prop_name}" >> .envslip
+else
+  echo "slip_stream_install=false" >> .envslip
+  echo "slip_stream_properties_file=/slip/my_custom_default_properties.yml" >> .envslip
+fi
+
 # Set default values if not provided
 agent_server_count=${agent_server_count:-1}
 agent_server_size=${agent_server_size:-"c5.xlarge"}
